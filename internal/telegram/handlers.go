@@ -34,13 +34,42 @@ func NewHandlers(d downloader.Downloader, p processor.Processor, c *cache.Cache,
 	}
 }
 
+const helpText = `Welcome to Light Video Bot! 🎥
+
+Here is what I can do:
+1. Download videos from YouTube and other platforms (just send the link).
+2. Process your uploaded videos.
+
+Available Commands:
+/start - Start the bot and see this help message.
+/help - Show all available commands and features.
+
+After sending a link or video, you can:
+• Only Download - Get the video as is.
+• Extract Audio - Get the MP3 version.
+• Cut/Clip - Extract a specific part of the video.
+• Re-encode - Convert to high-efficiency H.265.
+• Compress - Reduce file size.
+
+Rate limit: 5 requests per 3 hours.`
+
 func (h *Handlers) StartHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	if update.Message == nil {
 		return
 	}
 	b.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID: update.Message.Chat.ID,
-		Text:   "Hello! I am Light Video Bot. Send me a link to a video to get started.",
+		Text:   helpText,
+	})
+}
+
+func (h *Handlers) HelpHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+	if update.Message == nil {
+		return
+	}
+	b.SendMessage(ctx, &bot.SendMessageParams{
+		ChatID: update.Message.Chat.ID,
+		Text:   helpText,
 	})
 }
 

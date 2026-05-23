@@ -29,7 +29,8 @@ func main() {
 	c := cache.New(24*time.Hour, 1*time.Hour)
 	d := downloader.NewYTDLP(cfg.DownloadsDir, cfg.CookiesPath, cfg.CookiesFromBrowser)
 	p := processor.NewFFmpeg(cfg.ProcessedDir)
-	h := telegram.NewHandlers(d, p, c, cfg.TelegramToken, cfg.DownloadsDir)
+	q := processor.NewTaskQueue(3)
+	h := telegram.NewHandlers(d, p, q, c, cfg.TelegramToken, cfg.DownloadsDir)
 
 	opts := []bot.Option{
 		bot.WithDefaultHandler(h.MessageHandler),

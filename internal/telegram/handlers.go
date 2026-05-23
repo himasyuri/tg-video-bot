@@ -19,15 +19,17 @@ import (
 type Handlers struct {
 	downloader downloader.Downloader
 	processor  processor.Processor
+	queue      *processor.TaskQueue
 	cache      *cache.Cache
 	token      string
 	tmpDir     string
 }
 
-func NewHandlers(d downloader.Downloader, p processor.Processor, c *cache.Cache, token string, tmpDir string) *Handlers {
+func NewHandlers(d downloader.Downloader, p processor.Processor, q *processor.TaskQueue, c *cache.Cache, token string, tmpDir string) *Handlers {
 	return &Handlers{
 		downloader: d,
 		processor:  p,
+		queue:      q,
 		cache:      c,
 		token:      token,
 		tmpDir:     tmpDir,
@@ -330,6 +332,23 @@ func (h *Handlers) parseTimeToSeconds(t string) (float64, error) {
 }
 
 func (h *Handlers) processRequest(ctx context.Context, b *bot.Bot, chatID int64, url, fileID string, opts processor.Options) {
+	// Enter queue (max 3 concurrent)
+	pos, ready, release := h.queue.Enter(ctx)
+	defer release()
+
+	if pos > 0 {
+		b.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID: chatID,
+			Text:   fmt.Sprintf("System is busy. You are in the queue (Position: %d). Processing will start automatically.", pos),
+		})
+		select {
+		case <-ready:
+			// Turn reached
+		case <-ctx.Done():
+			return
+		}
+	}
+
 	b.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID: chatID,
 		Text:   "Processing, please wait...",

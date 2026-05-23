@@ -7,12 +7,22 @@ import (
 	"github.com/patrickmn/go-cache"
 )
 
+const (
+	StateNone = iota
+	StateAwaitingStartTime
+	StateAwaitingEndTime
+)
+
 // UserStats stores the quantity of downloads and conversions for a user.
 type UserStats struct {
-	Downloads     int
-	Conversions   int
-	RequestCount  int
-	LastResetTime time.Time
+	Downloads         int
+	Conversions       int
+	RequestCount      int
+	LastResetTime     time.Time
+	PendingURL        string // URL of the video currently being processed
+	PendingFileID     string // FileID of the uploaded video currently being processed
+	ConversationState int    // Current state of multi-step commands
+	StartTime         string // Stored start time for cutting
 }
 
 // Cache is a wrapper around go-cache to store user statistics.

@@ -1,5 +1,12 @@
 package telegram
 
-// Setup router for telegram commands
-func RegisterHandlers() {
+import (
+	"github.com/go-telegram/bot"
+)
+
+// RegisterHandlers registers the bot handlers.
+func RegisterHandlers(b *bot.Bot, h *Handlers) {
+	b.RegisterHandler(bot.HandlerTypeMessageText, "/start", bot.MatchTypeExact, h.StartHandler)
+	b.RegisterHandler(bot.HandlerTypeMessageText, "", bot.MatchTypePrefix, h.MessageHandler)
+	b.RegisterHandler(bot.HandlerTypeCallbackQueryData, "action_", bot.MatchTypePrefix, h.CallbackHandler)
 }
